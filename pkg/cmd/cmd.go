@@ -5,23 +5,24 @@ import (
 	"os"
 
 	cli "github.com/jawher/mow.cli"
-	qviz "github.com/kevinschoon/qviz/pkg"
+	"github.com/kevinschoon/qviz/pkg/http"
 )
 
 func Maybe(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s", err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
 	}
 }
 
 func Run(args []string) {
 	app := cli.App("qviz", "visualize data")
+	app.Spec = "[OPTIONS] [PATH]"
 	var (
-		path = app.StringArg("PATH", "", "path to a qviz script file")
+		_ = app.StringArg("PATH", "", "path to a qviz script file")
 	)
 	app.Action = func() {
-		Maybe(qviz.Read(*path))
+		Maybe(http.Serve(http.DefaultOptions()))
 	}
 	Maybe(app.Run(args))
 }

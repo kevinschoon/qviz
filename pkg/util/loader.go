@@ -6,11 +6,13 @@ import (
 
 	"github.com/containous/yaegi/interp"
 	"github.com/containous/yaegi/stdlib"
+	qviz "github.com/kevinschoon/qviz/pkg/qviz"
 )
 
 func Read(path string) error {
 	i := interp.New(interp.Options{})
 	i.Use(stdlib.Symbols)
+	i.Use(qviz.Packages)
 	raw, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -23,7 +25,7 @@ func Read(path string) error {
 	if err != nil {
 		return err
 	}
-	fn := v.Interface().(func() (string, error))
+	fn := v.Interface().(func() (*qviz.Viz, error))
 	fmt.Println(fn())
 	return nil
 }
