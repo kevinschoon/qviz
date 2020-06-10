@@ -4,8 +4,6 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/kevinschoon/qviz/pkg/qviz"
 )
 
 type TemplateContext struct{}
@@ -38,10 +36,5 @@ func mainHandler(opts *Options) http.HandlerFunc {
 func svgHandler(opts *Options) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "image/svg+xml")
-		qviz.Apply(
-			qviz.SetTitle("Test Title"),
-			qviz.SineDemo(),
-			qviz.SavePlot(w),
-		)
 	}
 }
