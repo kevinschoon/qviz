@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/containous/yaegi/interp"
 	"github.com/containous/yaegi/stdlib"
@@ -40,6 +41,11 @@ type PlotFunc func(*plot.Plot) error
 
 func Load(opts Options) error {
 	if opts.Watch {
+		// load first when watching for changes
+		err := load(opts)
+		if err != nil {
+			return err
+		}
 		return watch(opts)
 	}
 	return load(opts)
@@ -80,6 +86,9 @@ func watch(opts Options) error {
 						log.Printf("error loading script: %s", err)
 					}
 					if isRemove(event) {
+						// TODO: add a better mechanism to
+						// wait for the file to move back again.
+						time.Sleep(1 * time.Second)
 						err = watcher.Add(opts.ScriptPath)
 						if err != nil {
 							errCh <- err

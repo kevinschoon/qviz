@@ -47,9 +47,8 @@ func QViz(plot *plot.Plot) error {
 	opts := loader.DefaultOptions()
 	app.StringArgPtr(&opts.ScriptPath, "SCRIPT_PATH", opts.ScriptPath, "path to a qviz script file")
 	app.BoolOptPtr(&opts.Watch, "m monitor", opts.Watch, "monitor the script for changes running on each modification")
-	app.IntOptPtr(&opts.Width, "w width", opts.Width, "image width (inches)")
-	app.IntOptPtr(&opts.Height, "h height", opts.Height, "image height (inches)")
-	app.BoolOptPtr(&opts.Watch, "watch", opts.Watch, "watch the script file for changes")
+	app.IntOptPtr(&opts.Width, "width", opts.Width, "image width (inches)")
+	app.IntOptPtr(&opts.Height, "height", opts.Height, "image height (inches)")
 	app.StringOptPtr(&opts.FilePath, "o out", opts.FilePath, "write the plot to this path")
 	app.StringOptPtr(&opts.FileType, "t type", opts.FileType, "type of file to output [eps,jpg,pdf,png,svg,tiff]")
 	app.Action = func() {
