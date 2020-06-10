@@ -9,7 +9,13 @@ import (
 
 func QViz(plt *plot.Plot) error {
 	plt.Add(plotter.NewFunction(func(x float64) float64 {
+		return 5*math.Sin(x) + 50
+	}))
+	plt.Add(plotter.NewFunction(func(x float64) float64 {
 		return 10*math.Sin(x) + 50
+	}))
+	plt.Add(plotter.NewFunction(func(x float64) float64 {
+		return 15*math.Sin(x) + 50
 	}))
 	plt.X.Min = 0
 	plt.X.Max = 10
