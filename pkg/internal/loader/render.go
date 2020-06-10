@@ -21,6 +21,8 @@ func DefaultRenderOptions() *RenderOptions {
 	return &RenderOptions{
 		ChartWriter: os.Stdout,
 		FileType:    "svg",
+		Height:      5,
+		Width:       5,
 	}
 }
 

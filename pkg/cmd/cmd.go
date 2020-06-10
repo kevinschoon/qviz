@@ -22,10 +22,10 @@ func Run(args []string) {
 	app.Command("eval", "evaluate code and generate a plot image", func(cmd *cli.Cmd) {
 		opts := loader.DefaultRenderOptions()
 		path := cmd.StringArg("PATH", "", "path to a qviz script file")
-		cmd.IntOptPtr(&opts.Width, "w width", 5, "image width")
-		cmd.IntOptPtr(&opts.Height, "h height", 5, "image height")
+		cmd.IntOptPtr(&opts.Width, "w width", opts.Width, "image width (inches)")
+		cmd.IntOptPtr(&opts.Height, "h height", opts.Height, "image height (inches)")
 		cmd.StringOptPtr(&opts.FilePath, "o out", "", "write the plot to this path (defaults to stdout)")
-		cmd.StringOptPtr(&opts.FileType, "t type", "svg", "type of file to output [eps,jpg,pdf,png,svg,tiff]")
+		cmd.StringOptPtr(&opts.FileType, "t type", opts.FileType, "type of file to output [eps,jpg,pdf,png,svg,tiff]")
 		cmd.Action = func() {
 			ctx, err := loader.LoadPath(*path)
 			Maybe(err)
