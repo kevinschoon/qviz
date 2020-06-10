@@ -4,12 +4,15 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
+	"os/signal"
 	"path"
 	"strings"
 
 	"github.com/containous/yaegi/interp"
 	"github.com/containous/yaegi/stdlib"
+	"github.com/fsnotify/fsnotify"
 	"github.com/kevinschoon/qviz/pkg/internal/loader/symbols"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
@@ -36,7 +39,72 @@ func DefaultOptions() *Options {
 type PlotFunc func(*plot.Plot) error
 
 func Load(opts Options) error {
+	if opts.Watch {
+		return watch(opts)
+	}
 	return load(opts)
+}
+
+func isWrite(evt fsnotify.Event) bool {
+	return evt.Op&fsnotify.Write == fsnotify.Write
+}
+
+func isRemove(evt fsnotify.Event) bool {
+	return evt.Op&fsnotify.Remove == fsnotify.Remove
+}
+
+func watch(opts Options) error {
+	log.Printf("watching script %s for new changes\n", opts.ScriptPath)
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+	defer watcher.Close()
+	sigCh := make(chan os.Signal, 1)
+	errCh := make(chan error)
+	signal.Notify(sigCh, os.Interrupt)
+	go func() {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				log.Println(event, ok)
+				if !ok {
+					errCh <- nil
+					return
+				}
+				// NOTE: vim is weird
+				// https://github.com/fsnotify/fsnotify/issues/94
+				if isWrite(event) || isRemove(event) {
+					err := load(opts)
+					if err != nil {
+						log.Printf("error loading script: %s", err)
+					}
+					if isRemove(event) {
+						err = watcher.Add(opts.ScriptPath)
+						if err != nil {
+							errCh <- err
+							return
+						}
+					}
+				}
+			case err, ok := <-watcher.Errors:
+				log.Println("caught error")
+				if !ok {
+					errCh <- nil
+					return
+				}
+				errCh <- err
+			case <-sigCh:
+				log.Println("caught interrupt")
+				errCh <- nil
+			}
+		}
+	}()
+	err = watcher.Add(opts.ScriptPath)
+	if err != nil {
+		return err
+	}
+	return <-errCh
 }
 
 func load(opts Options) error {
