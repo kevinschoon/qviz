@@ -2,9 +2,9 @@ package loader
 
 import (
 	"errors"
-	"io"
 	"os"
 	"path"
+	"strings"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
@@ -41,28 +41,22 @@ func Render(ctx *PlotContext, opts RenderOptions) error {
 
 func writeChart(plt *plot.Plot, opts RenderOptions) error {
 	var (
-		fp io.WriteCloser
-		ft string
+		ft string = opts.FileType
 	)
-	if opts.FilePath == "-" {
-		fp = os.Stdout
-	} else if opts.FilePath != "" {
-		w, err := os.Create(opts.FilePath)
-		if err != nil {
-			return err
-		}
-		fp = w
+	fp, err := os.Create(opts.FilePath)
+	if err != nil {
+		return err
 	}
-	if opts.FileType == "" {
+	if ft == "" {
 		// use the extension to guess the file type
-		ft = path.Ext(opts.FilePath)
+		ft = strings.Replace(path.Ext(opts.FilePath), ".", "", 1)
 		if ft == "" {
 			return errors.New("could not guess file type")
 		}
 	}
 	defer fp.Close()
 	w, err := plt.WriterTo(
-		vg.Length(opts.Width)*vg.Inch, vg.Length(opts.Height)*vg.Inch, opts.FileType)
+		vg.Length(opts.Width)*vg.Inch, vg.Length(opts.Height)*vg.Inch, ft)
 	if err != nil {
 		return err
 	}
