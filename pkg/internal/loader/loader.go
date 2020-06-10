@@ -12,14 +12,40 @@ import (
 	"gonum.org/v1/plot"
 )
 
-type PlotContext struct {
-	PlotFunc   PlotFunc
-	ScriptText string
+type Options struct {
+	ScriptPath string
+	FileType   string
+	FilePath   string
+	// inches
+	Height int
+	Width  int
+	Watch  bool
+}
+
+func DefaultOptions() *Options {
+	return &Options{
+		FilePath: "/dev/stdout",
+		Height:   5,
+		Width:    5,
+	}
 }
 
 type PlotFunc func(*plot.Plot) error
 
-func Load(reader io.Reader) (*PlotContext, error) {
+func Load(opts Options) error {
+	fp, err := os.Open(opts.ScriptPath)
+	if err != nil {
+		return err
+	}
+	defer fp.Close()
+	fn, err := eval(fp)
+	if err != nil {
+		return err
+	}
+	return Render(fn, opts)
+}
+
+func eval(reader io.Reader) (PlotFunc, error) {
 	i := interp.New(interp.Options{})
 	i.Use(stdlib.Symbols)
 	i.Use(symbols.Symbols)
@@ -39,17 +65,5 @@ func Load(reader io.Reader) (*PlotContext, error) {
 	if !ok {
 		return nil, errors.New("bad qviz file")
 	}
-	return &PlotContext{
-		PlotFunc:   pFn,
-		ScriptText: string(raw),
-	}, nil
-}
-
-func LoadPath(path string) (*PlotContext, error) {
-	fp, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer fp.Close()
-	return Load(fp)
+	return pFn, nil
 }

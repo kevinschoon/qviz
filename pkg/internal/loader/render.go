@@ -10,36 +10,19 @@ import (
 	"gonum.org/v1/plot/vg"
 )
 
-type RenderOptions struct {
-	FileType string
-	FilePath string
-	// inches
-	Height int
-	Width  int
-}
-
-func DefaultRenderOptions() *RenderOptions {
-	return &RenderOptions{
-		FileType: "",
-		FilePath: "/dev/stdout",
-		Height:   5,
-		Width:    5,
-	}
-}
-
-func Render(ctx *PlotContext, opts RenderOptions) error {
+func Render(fn PlotFunc, opts Options) error {
 	plt, err := plot.New()
 	if err != nil {
 		return err
 	}
-	err = ctx.PlotFunc(plt)
+	err = fn(plt)
 	if err != nil {
 		return err
 	}
 	return writeChart(plt, opts)
 }
 
-func writeChart(plt *plot.Plot, opts RenderOptions) error {
+func writeChart(plt *plot.Plot, opts Options) error {
 	var (
 		ft string = opts.FileType
 	)
