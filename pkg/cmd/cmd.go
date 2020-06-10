@@ -48,7 +48,7 @@ func QViz(plot *plot.Plot) error {
 	path := app.StringArg("SCRIPT_PATH", "", "path to a qviz script file")
 	app.IntOptPtr(&opts.Width, "w width", opts.Width, "image width (inches)")
 	app.IntOptPtr(&opts.Height, "h height", opts.Height, "image height (inches)")
-	app.StringOptPtr(&opts.FilePath, "o out", "", "write the plot to this path (defaults to stdout)")
+	app.StringOptPtr(&opts.FilePath, "o out", opts.FilePath, "write the plot to this path")
 	app.StringOptPtr(&opts.FileType, "t type", opts.FileType, "type of file to output [eps,jpg,pdf,png,svg,tiff]")
 	app.Action = func() {
 		ctx, err := loader.LoadPath(*path)

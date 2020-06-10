@@ -1,17 +1,18 @@
 package loader
 
 import (
+	"errors"
 	"io"
 	"os"
+	"path"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 )
 
 type RenderOptions struct {
-	FileType    string
-	FilePath    string
-	ChartWriter io.WriteCloser
+	FileType string
+	FilePath string
 	// inches
 	Height int
 	Width  int
@@ -19,10 +20,10 @@ type RenderOptions struct {
 
 func DefaultRenderOptions() *RenderOptions {
 	return &RenderOptions{
-		ChartWriter: os.Stdout,
-		FileType:    "svg",
-		Height:      5,
-		Width:       5,
+		FileType: "",
+		FilePath: "/dev/stdout",
+		Height:   5,
+		Width:    5,
 	}
 }
 
@@ -39,15 +40,25 @@ func Render(ctx *PlotContext, opts RenderOptions) error {
 }
 
 func writeChart(plt *plot.Plot, opts RenderOptions) error {
-	var fp io.WriteCloser
-	if opts.FilePath != "" {
+	var (
+		fp io.WriteCloser
+		ft string
+	)
+	if opts.FilePath == "-" {
+		fp = os.Stdout
+	} else if opts.FilePath != "" {
 		w, err := os.Create(opts.FilePath)
 		if err != nil {
 			return err
 		}
 		fp = w
-	} else {
-		fp = opts.ChartWriter
+	}
+	if opts.FileType == "" {
+		// use the extension to guess the file type
+		ft = path.Ext(opts.FilePath)
+		if ft == "" {
+			return errors.New("could not guess file type")
+		}
 	}
 	defer fp.Close()
 	w, err := plt.WriterTo(
