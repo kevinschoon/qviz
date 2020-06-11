@@ -15,6 +15,10 @@ func QViz(plt *plot.Plot) error {
 	plt.X.Label.Text = "The X Axis..."
 	plt.Y.Label.Text = "The Y Axis..."
 	plt.X.Padding = vg.Points(5)
+	plt.X.Min = 0
+	plt.X.Max = 20
+	plt.Y.Min = 0
+	plt.Y.Max = 200
 	palette, _ := brewer.GetPalette(brewer.TypeAny, "Dark2", 3)
 	quad := plotter.NewFunction(func(x float64) float64 {
 		return x * x
@@ -37,9 +41,5 @@ func QViz(plt *plot.Plot) error {
 	plt.Legend.Add("10*sin(x)+100", sin)
 	grid := plotter.NewGrid()
 	plt.Add(grid, quad, exp, sin)
-	plt.X.Min = 0
-	plt.X.Max = 20
-	plt.Y.Min = 0
-	plt.Y.Max = 200
 	return nil
 }
