@@ -16,7 +16,7 @@ func Maybe(err error) {
 }
 
 func Run(args []string) {
-	app := cli.App("qviz", "Generate Gonum plots by writing Go scripts")
+	app := cli.App("qviz", "Generate plots by writing Go scripts")
 	app.LongDesc = `
  ██████╗ ██╗   ██╗██╗███████╗
 ██╔═══██╗██║   ██║██║╚══███╔╝
@@ -25,7 +25,7 @@ func Run(args []string) {
 ╚██████╔╝ ╚████╔╝ ██║███████╗
  ╚══▀▀═╝   ╚═══╝  ╚═╝╚══════╝
 
-QViz evalutes Go scripts that generate a Gonum Plot and write the output to a file.
+QViz evalutes Go source code to generate Gonum plots and write their output to a file.
 
 Read more about Gonum @ https://www.gonum.org/
 

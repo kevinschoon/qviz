@@ -32,8 +32,8 @@ type Options struct {
 func DefaultOptions() *Options {
 	return &Options{
 		FilePath: "/dev/stdout",
-		Height:   5,
-		Width:    5,
+		Height:   9,
+		Width:    9,
 	}
 }
 
