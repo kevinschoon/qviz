@@ -1,4 +1,4 @@
-QViz is a utility to quickly and interactively visualize data with by evaluating Go source code at runtime. It works by exposing the [gonum/plot](https://github.com/gonum/plot/) library to a [yaegi](https://github.com/containous/yaegi/) interpreter.
+QViz is a utility to quickly and interactively visualize data with by evaluating Go source code at runtime. It works by exposing the [gonum/plot](https://github.com/gonum/plot/) library to a [yaegi](https://github.com/containous/yaegi/) interpreter. Beware that this is very incomplete and buggy software for the moment.
 
 ![ss](static/ss.png)
 
@@ -49,8 +49,8 @@ func QViz(plt *plot.Plot) error {
 
 ## Roadmap
 
-[_] CLI based plotter
-[_] allow external user defined packages
-[_] first class integration with [qframe](https://github.com/tobgu/qframe)
-[_] finish importing the remaining Gonum packages
-[_] native UI / code editor...?
+- [ ] CLI based plotter
+- [ ] allow external user defined packages
+- [ ] first class integration with [qframe](https://github.com/tobgu/qframe)
+- [ ] finish importing the remaining Gonum packages
+- [ ] native UI / code editor...?
