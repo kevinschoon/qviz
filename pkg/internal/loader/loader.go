@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"reflect"
 	"strings"
 	"time"
 
@@ -122,34 +123,63 @@ func load(opts Options) error {
 		return err
 	}
 	defer fp.Close()
-	fn, err := eval(fp)
-	if err != nil {
-		return err
-	}
-	return render(fn, opts)
+	return eval(fp, opts)
 }
 
-func eval(reader io.Reader) (PlotFunc, error) {
+func eval(reader io.Reader, opts Options) error {
 	i := interp.New(interp.Options{})
 	i.Use(stdlib.Symbols)
 	i.Use(symbols.Symbols)
+	var (
+		errCh = make(chan error)
+		// use a channel as a semaphore to halt program
+		// execution after the first call to Render()
+		done = make(chan bool)
+	)
+	// overlay closures here as what is defined in the
+	// stdlib. any changes there must be reflected here
+	// and vice versa.
+	i.Use(map[string]map[string]reflect.Value{
+		"github.com/kevinschoon/qviz/pkg/stdlib": {
+			"New": reflect.ValueOf(func() *plot.Plot {
+				plt, err := plot.New()
+				if err != nil {
+					panic(err)
+				}
+				return plt
+			}),
+			"Render": reflect.ValueOf(func(plt *plot.Plot) error {
+				defer func() {
+					done <- true
+				}()
+				return writeChart(plt, opts)
+			}),
+			"Maybe": reflect.ValueOf(func(err error) {
+				if err != nil {
+					// TODO: maybe there is some way to
+					// display the line this was called from?
+					log.Println("QViz Encountered a Fatal Error:")
+					errCh <- err
+				}
+			}),
+		},
+	})
 	raw, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	_, err = i.Eval(string(raw))
-	if err != nil {
-		return nil, err
+	go func() {
+		_, err = i.Eval(string(raw))
+		if err != nil {
+			errCh <- err
+		}
+	}()
+	select {
+	case err := <-errCh:
+		return err
+	case <-done:
+		return nil
 	}
-	qFn, err := i.Eval("QViz")
-	if err != nil {
-		return nil, err
-	}
-	pFn, ok := qFn.Interface().(func(*plot.Plot) error)
-	if !ok {
-		return nil, errors.New("bad qviz file")
-	}
-	return pFn, nil
 }
 
 func render(fn PlotFunc, opts Options) error {

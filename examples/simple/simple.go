@@ -3,13 +3,14 @@ package main
 import (
 	"math"
 
-	"gonum.org/v1/plot"
+	qviz "github.com/kevinschoon/qviz/pkg/stdlib"
 	"gonum.org/v1/plot/palette/brewer"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 )
 
-func QViz(plt *plot.Plot) error {
+func main() {
+	plt := qviz.New()
 	plt.Title.Text = "QViz Example Plot"
 	plt.Title.TextStyle.Font.Size = 5 * vg.Millimeter
 	plt.X.Label.Text = "The X Axis..."
@@ -41,5 +42,5 @@ func QViz(plt *plot.Plot) error {
 	plt.Legend.Add("10*sin(x)+100", sin)
 	grid := plotter.NewGrid()
 	plt.Add(grid, quad, exp, sin)
-	return nil
+	qviz.Render(plt)
 }

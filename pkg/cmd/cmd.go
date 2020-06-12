@@ -27,13 +27,16 @@ Example script:
 
 package main
 
-import (
-	"gonum.org/v1/plot"
-)
+import qviz "github.com/kevinschoon/qviz/pkg/stdlib"
 
-func QViz(plot *plot.Plot) error {
-	// write your plot code here
-	return nil
+func main() {
+    // qviz.New is a convenience function that returns a
+    // new *plot.Plot 
+    plt := qviz.New()
+    plt.Title.Text = "My New Chart"
+    // qviz.Render must be called at the end of your script file and only once,
+    // calling it before hand will halt the execution of the program.
+    qviz.Render(plt)
 }
 `
 

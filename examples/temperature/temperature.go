@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 
-	"gonum.org/v1/plot"
+	qviz "github.com/kevinschoon/qviz/pkg/stdlib"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 )
@@ -29,13 +29,11 @@ func sum(floats []float64) float64 {
 	return n
 }
 
-func QViz(plt *plot.Plot) error {
+func main() {
 
 	// assumes the script is being ran from the project root
 	fp, err := os.Open("./examples/temperature/GlobalTemperatures.csv")
-	if err != nil {
-		return err
-	}
+	qviz.Maybe(err)
 	reader := csv.NewReader(fp)
 	// skip the header
 	reader.Read()
@@ -63,6 +61,7 @@ func QViz(plt *plot.Plot) error {
 	}
 	scatter, _ := plotter.NewScatter(xys)
 	scatter.Color = colors["primary"]
+	plt := qviz.New()
 	plt.Legend.Add("temperatures", scatter)
 	// plot a sliding window
 	xys = make(plotter.XYs, len(temps))
@@ -107,7 +106,7 @@ func QViz(plt *plot.Plot) error {
 	plt.Y.Color = colors["primary"]
 	plt.Y.Tick.Label.Color = colors["primary"]
 	plt.Add(scatter, sma, grid)
-	return nil
+	qviz.Render(plt)
 }
 
 func init() {

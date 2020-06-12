@@ -1,7 +1,7 @@
 package main
 
-import "gonum.org/v1/plot"
+import qviz "github.com/kevinschoon/qviz/pkg/stdlib"
 
-func QViz(plt *plot.Plot) error {
-	return nil
+func main() {
+	qviz.Render(qviz.New())
 }

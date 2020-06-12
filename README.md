@@ -34,16 +34,22 @@ vim examples/simple/simple.go
 
 ## Writing Scripts
 
-All QViz scripts need to expose a function with the following signature `func QViz(*plot.Plot) error`. Example scripts can be found [here](/examples).
+Valid QViz scripts are normal Go files that import the `pkg/stdlib` overlay package. 
+Example scripts can be found [here](/examples).
 
 ```go
 package main
 
-import "gonum.org/v1/plot"
+import qviz "github.com/kevinschoon/qviz/pkg/stdlib"
 
-func QViz(plt *plot.Plot) error {
-    // your code goes here
-    return nil
+func main() {
+    // qviz.New is a convenience function that returns a
+    // new *plot.Plot 
+    plt := qviz.New()
+    plt.Title.Text = "My New Chart"
+    // qviz.Render must be called at the end of your script file and only once,
+    // calling it before hand will halt the execution of the program.
+    qviz.Render(plt)
 }
 ```
 
@@ -51,6 +57,6 @@ func QViz(plt *plot.Plot) error {
 
 - [ ] CLI based plotter
 - [ ] allow external user defined packages
-- [ ] first class integration with [qframe](https://github.com/tobgu/qframe)
-- [ ] finish importing the remaining Gonum packages
+- [x] first class integration with [qframe](https://github.com/tobgu/qframe)
+- [x] finish importing the remaining Gonum packages
 - [ ] native UI / code editor...?
