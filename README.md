@@ -1,4 +1,5 @@
-QViz is a utility to quickly and interactively visualize data with by evaluating Go source code at runtime. It works by exposing the [gonum/plot](https://github.com/gonum/plot/) library to a [yaegi](https://github.com/containous/yaegi/) interpreter. Beware that this is very incomplete and buggy software for the moment.
+# QViz
+QViz is a utility to quickly and interactively visualize data with by evaluating Go source code at runtime. It works by exposing the [gonum/plot](https://github.com/gonum/plot/) library to a [yaegi](https://github.com/containous/yaegi/) interpreter.
 
 ![ss](static/ss.png)
 
@@ -28,7 +29,7 @@ the [feh](https://feh.finalrewind.org/) X11 image viewer works nicely monitoring
 qviz --monitor -out /tmp/simple.png examples/simple/simple.go
 # Next in a separate pane you can use an image viewer like feh
 feh /tmp/simple.png
-# now finally open up the script file in your favorite editor
+# Now finally open up the script file in your favorite editor
 vim examples/simple/simple.go
 ```
 
