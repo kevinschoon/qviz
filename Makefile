@@ -1,11 +1,22 @@
 SYMBOLS_PATH=pkg/internal/loader/symbols
+QVIZ_VERSION=$(shell git rev-parse HEAD)
+GONUM_VERSION=$(shell grep 'gonum.org/v1/gonum' go.mod | cut -d ' ' -f2)
+QFRAME_VERSION=$(shell grep 'github.com/tobgu/qframe' go.mod | cut -d ' ' -f2)
+PLOT_VERSION=$(shell grep 'gonum.org/v1/plot' go.mod | cut -d ' ' -f2)
 
-.PHONY: bin/qviz bin/generated
+LDFLAGS=\
+	-X github.com/kevinschoon/qviz/pkg/version.Gonum=${GONUM_VERSION} \
+	-X github.com/kevinschoon/qviz/pkg/version.Plot=${PLOT_VERSION} \
+	-X github.com/kevinschoon/qviz/pkg/version.QFrame=${QFRAME_VERSION} \
+	-X github.com/kevinschoon/qviz/pkg/version.QViz=${QVIZ_VERSION}
+
+.PHONY: bin/qviz
 
 default: bin/qviz
 
 install:
-	cd cmd/qviz && go install
+	cd cmd/qviz \
+	&& go install -ldflags '${LDFLAGS}'
 
 test:
 	go test ./...
@@ -13,30 +24,26 @@ test:
 bin:
 	mkdir -p $@
 
+bin/qviz: bin
+	cd cmd/qviz && \
+	go build -ldflags '${LDFLAGS}' \
+	-o ../../$@
+
 ${SYMBOLS_PATH}:
 	mkdir $@
 
-# TODO: simplify the including of external packages
 generate: ${SYMBOLS_PATH}
-	cd ${SYMBOLS_PATH} \
-	&& goexports gonum.org/v1/plot \
-	&& goexports gonum.org/v1/plot/cmpimg \
-	&& goexports gonum.org/v1/plot/palette \
-	&& goexports gonum.org/v1/plot/palette/brewer \
-	&& goexports gonum.org/v1/plot/palette/moreland \
-	&& goexports gonum.org/v1/plot/plotter \
-	&& goexports gonum.org/v1/plot/plotutil \
-	&& goexports gonum.org/v1/plot/tools/bezier \
-	&& goexports gonum.org/v1/plot/vg \
-	&& goexports gonum.org/v1/plot/vg/draw \
-	&& goexports gonum.org/v1/plot/vg/fonts \
-	&& goexports gonum.org/v1/plot/vg/recorder \
-	&& goexports gonum.org/v1/plot/vg/vgeps \
-	&& goexports gonum.org/v1/plot/vg/vgimg \
-	&& goexports gonum.org/v1/plot/vg/vgpdf \
-	&& goexports gonum.org/v1/plot/vg/vgsvg \
-	&& goexports gonum.org/v1/plot/vg/vgtex
-
-bin/qviz: bin
-	cd cmd/qviz && go build -o ../../$@
-
+	find ${SYMBOLS_PATH} -type f -name 'go1_*' -exec rm {} \;
+	scripts/gen.sh \
+		'gonum.org/v1/plot/...' \
+		'.*\/internal\/.*' \
+		'gonum.org/v1/plot/gob'
+	scripts/gen.sh \
+		'gonum.org/v1/gonum/...' \
+		'.*\/internal\/.*' \
+		'gonum.org/v1/gonum/blas/testblas/benchautogen'
+	scripts/gen.sh \
+		'github.com/tobgu/qframe/...' \
+		'.*\/internal\/.*' \
+		'github.com/tobgu/qframe/cmd/qfgenerate' \
+		'github.com/tobgu/qframe/config'
