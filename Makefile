@@ -18,8 +18,8 @@ install:
 	cd cmd/qviz \
 	&& go install -ldflags '${LDFLAGS}'
 
-test:
-	go test ./...
+test: bin/qviz
+	bin/qviz --help
 
 bin:
 	mkdir -p $@
