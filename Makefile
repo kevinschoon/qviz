@@ -1,8 +1,11 @@
 SYMBOLS_PATH=pkg/internal/loader/symbols
-QVIZ_VERSION=$(shell git rev-parse HEAD)
+QVIZ_VERSION=$(shell git describe --tags 2>/dev/null || git rev-parse HEAD)
 GONUM_VERSION=$(shell grep 'gonum.org/v1/gonum' go.mod | cut -d ' ' -f2)
 QFRAME_VERSION=$(shell grep 'github.com/tobgu/qframe' go.mod | cut -d ' ' -f2)
 PLOT_VERSION=$(shell grep 'gonum.org/v1/plot' go.mod | cut -d ' ' -f2)
+
+LINUX_RELEASE=qviz-${QVIZ_VERSION}-linux-amd64
+DARWIN_RELEASE=qviz-${QVIZ_VERSION}-darwin-amd64
 
 LDFLAGS=\
 	-X github.com/kevinschoon/qviz/pkg/version.Gonum=${GONUM_VERSION} \
@@ -18,6 +21,12 @@ install:
 	cd cmd/qviz \
 	&& go install -ldflags '${LDFLAGS}'
 
+release: \
+	bin/qviz-${QVIZ_VERSION}-linux-amd64 \
+	bin/qviz-${QVIZ_VERSION}-linux-amd64.md5 \
+	bin/qviz-${QVIZ_VERSION}-darwin-amd64 \
+	bin/qviz-${QVIZ_VERSION}-darwin-amd64.md5
+
 test: bin/qviz
 	bin/qviz --help
 
@@ -28,6 +37,26 @@ bin/qviz: bin
 	cd cmd/qviz && \
 	go build -ldflags '${LDFLAGS}' \
 	-o ../../$@
+
+bin/${LINUX_RELEASE}: bin
+	cd cmd/qviz \
+	&& \
+	GOOS=linux \
+	GOARCH=amd64 \
+	go build -ldflags '${LDFLAGS}' -o ../../$@
+
+bin/${LINUX_RELEASE}.md5: bin/${LINUX_RELEASE}
+	md5sum bin/${LINUX_RELEASE} | sed -e 's/bin\///' > $@
+
+bin/${DARWIN_RELEASE}: bin
+	cd cmd/qviz \
+	&& \
+	GOOS=darwin \
+	GOARCH=amd64 \
+	go build -ldflags '${LDFLAGS}' -o ../../$@
+
+bin/${DARWIN_RELEASE}.md5: bin/${DARWIN_RELEASE}
+	md5sum bin/${DARWIN_RELEASE} | sed -e 's/bin\///' > $@
 
 ${SYMBOLS_PATH}:
 	mkdir $@
