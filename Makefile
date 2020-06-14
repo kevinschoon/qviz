@@ -13,8 +13,6 @@ LDFLAGS=\
 	-X github.com/kevinschoon/qviz/pkg/version.QFrame=${QFRAME_VERSION} \
 	-X github.com/kevinschoon/qviz/pkg/version.QViz=${QVIZ_VERSION}
 
-.PHONY: bin/qviz
-
 default: bin/qviz
 
 install:
@@ -22,10 +20,10 @@ install:
 	&& go install -ldflags '${LDFLAGS}'
 
 release: \
-	bin/qviz-${QVIZ_VERSION}-linux-amd64 \
-	bin/qviz-${QVIZ_VERSION}-linux-amd64.md5 \
-	bin/qviz-${QVIZ_VERSION}-darwin-amd64 \
-	bin/qviz-${QVIZ_VERSION}-darwin-amd64.md5
+	bin/${LINUX_RELEASE} \
+	bin/${LINUX_RELEASE}.sha256 \
+	bin/${DARWIN_RELEASE} \
+	bin/${DARWIN_RELEASE}.sha256
 
 test: bin/qviz
 	bin/qviz --help
@@ -45,8 +43,8 @@ bin/${LINUX_RELEASE}: bin
 	GOARCH=amd64 \
 	go build -ldflags '${LDFLAGS}' -o ../../$@
 
-bin/${LINUX_RELEASE}.md5: bin/${LINUX_RELEASE}
-	md5sum bin/${LINUX_RELEASE} | sed -e 's/bin\///' > $@
+bin/${LINUX_RELEASE}.sha256: bin/${LINUX_RELEASE}
+	sha256sum $< | sed -e 's/bin\///' > $@
 
 bin/${DARWIN_RELEASE}: bin
 	cd cmd/qviz \
@@ -55,8 +53,8 @@ bin/${DARWIN_RELEASE}: bin
 	GOARCH=amd64 \
 	go build -ldflags '${LDFLAGS}' -o ../../$@
 
-bin/${DARWIN_RELEASE}.md5: bin/${DARWIN_RELEASE}
-	md5sum bin/${DARWIN_RELEASE} | sed -e 's/bin\///' > $@
+bin/${DARWIN_RELEASE}.sha256: bin/${DARWIN_RELEASE}
+	sha256sum $< | sed -e 's/bin\///' > $@
 
 ${SYMBOLS_PATH}:
 	mkdir $@
