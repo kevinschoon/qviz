@@ -1,4 +1,5 @@
-# QViz
+# QViz ![QViz](https://github.com/kevinschoon/qviz/workflows/QViz/badge.svg) [![API reference](https://img.shields.io/badge/godoc-reference-5272B4)](https://pkg.go.dev/github.com/kevinschoon/qviz?tab=doc)
+
 QViz is a utility to quickly and interactively visualize data with by evaluating Go source code at runtime. It works by exposing the [gonum/plot](https://github.com/gonum/plot/) library to a [yaegi](https://github.com/containous/yaegi/) interpreter.
 
 ![ss](static/ss.png)

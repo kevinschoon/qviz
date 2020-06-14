@@ -1,3 +1,5 @@
+// package qviz contains the signatures for all available
+// functions in qviz script files.
 package qviz
 
 import "gonum.org/v1/plot"
