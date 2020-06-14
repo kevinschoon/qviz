@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	qviz "github.com/kevinschoon/qviz/pkg/stdlib"
+	"gonum.org/v1/gonum/stat"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 )
@@ -19,14 +20,6 @@ var colors = map[string]color.Color{
 	"primary":   color.Black,
 	"secondary": color.White,
 	"highlight": color.RGBA{R: 255, A: 255},
-}
-
-func sum(floats []float64) float64 {
-	var n float64
-	for _, float := range floats {
-		n += float
-	}
-	return n
 }
 
 func main() {
@@ -75,7 +68,7 @@ func main() {
 		}
 		window = append(window[1:], temp[1])
 		xys[i].X = float64(i)
-		xys[i].Y = sum(window) / float64(windowSize)
+		xys[i].Y = stat.Mean(window, nil)
 	}
 	sma, _ := plotter.NewLine(xys)
 	sma.Color = colors["highlight"]
