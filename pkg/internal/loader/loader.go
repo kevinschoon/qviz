@@ -2,6 +2,7 @@ package loader
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -43,6 +44,7 @@ type PlotFunc func(*plot.Plot) error
 func Load(opts Options) error {
 	if opts.Watch {
 		// load first when watching for changes
+		clear()
 		err := load(opts)
 		if err != nil {
 			return err
@@ -61,7 +63,6 @@ func isRemove(evt fsnotify.Event) bool {
 }
 
 func watch(opts Options) error {
-	log.Printf("watching script %s for new changes\n", opts.ScriptPath)
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
@@ -74,7 +75,6 @@ func watch(opts Options) error {
 		for {
 			select {
 			case event, ok := <-watcher.Events:
-				log.Println(event, ok)
 				if !ok {
 					errCh <- nil
 					return
@@ -82,6 +82,7 @@ func watch(opts Options) error {
 				// NOTE: vim is weird
 				// https://github.com/fsnotify/fsnotify/issues/94
 				if isWrite(event) || isRemove(event) {
+					clear()
 					err := load(opts)
 					if err != nil {
 						log.Printf("error loading script: %s", err)
@@ -164,6 +165,7 @@ func eval(reader io.Reader, opts Options) error {
 			}),
 		},
 	})
+
 	raw, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return err
@@ -217,4 +219,11 @@ func writeChart(plt *plot.Plot, opts Options) error {
 	}
 	_, err = w.WriteTo(fp)
 	return err
+}
+
+func clear() {
+	// TODO: it would be nice if yaeji took
+	// an io.Writer for stdout/stderr
+	fmt.Fprintf(os.Stdout, "\033[H\033[2J")
+	fmt.Fprintf(os.Stdout, "Program Output:\n\n")
 }
