@@ -12,25 +12,22 @@ Usage: qviz [OPTIONS] SCRIPT_PATH
 Generate plots by writing Go scripts
 
 Arguments:
-  SCRIPT_PATH     path to a qviz script file
+  SCRIPT_PATH      path to a qviz script file
 
 Options:
-  -m, --monitor   monitor the script for changes running on each modification
-      --width     image width (inches) (default 9)
-      --height    image height (inches) (default 9)
-  -o, --out       write the plot to this path (default "/dev/stdout")
-  -t, --type      type of file to output [eps,jpg,pdf,png,svg,tiff]
+  -o, --out        file output path (implies headless)
+  -t, --type       file output type [eps,jpg,pdf,png,svg,tiff] (default "jpg")
+  -w, --width      output width (pixels) (default 900)
+  -h, --height     output height (pixels) (default 800)
+      --headless   do not render the UI
 ```
 
 ### Interactive Usage
-There are several approaches that can be used to display a plot interactively while editing script files. On Linux
-the [feh](https://feh.finalrewind.org/) X11 image viewer works nicely monitoring the output image for changes.
+QViz has a built in native UI for viewing plots that will start automatically when you run the command.
 ```bash
 # Monitor the simple.go script file for changes in real time
-qviz --monitor -out /tmp/simple.png examples/simple/simple.go
-# Next in a separate pane you can use an image viewer like feh
-feh /tmp/simple.png
-# Now finally open up the script file in your favorite editor
+qviz examples/simple/simple.go
+# Now open up the script file in your favorite editor
 vim examples/simple/simple.go
 ```
 
@@ -61,4 +58,4 @@ func main() {
 - [ ] allow external user defined packages
 - [x] first class integration with [qframe](https://github.com/tobgu/qframe)
 - [x] finish importing the remaining Gonum packages
-- [ ] native UI / code editor...?
+- [x] native UI

@@ -12,14 +12,19 @@ import (
 func main() {
 	plt := qviz.New()
 	plt.Title.Text = "QViz Example Plot"
-	plt.Title.TextStyle.Font.Size = 5 * vg.Millimeter
+	plt.Title.TextStyle.Font.Size = 15 * vg.Millimeter
 	plt.X.Label.Text = "The X Axis..."
+	plt.X.Label.TextStyle.Font.Size = 15 * vg.Millimeter
 	plt.Y.Label.Text = "The Y Axis..."
+	plt.Y.Label.TextStyle.Font.Size = 15 * vg.Millimeter
+	plt.X.Tick.Label.Font.Size = 10 * vg.Millimeter
+	plt.Legend.TextStyle.Font.Size = 15 * vg.Millimeter
 	plt.X.Padding = vg.Points(5)
 	plt.X.Min = 0
 	plt.X.Max = 20
 	plt.Y.Min = 0
 	plt.Y.Max = 200
+	plt.Y.Tick.Label.Font.Size = 10 * vg.Millimeter
 	palette, _ := brewer.GetPalette(brewer.TypeAny, "Dark2", 3)
 	quad := plotter.NewFunction(func(x float64) float64 {
 		return x * x
@@ -40,7 +45,6 @@ func main() {
 	sin.Color = palette.Colors()[2]
 	sin.Width = vg.Points(2)
 	plt.Legend.Add("10*sin(x)+100", sin)
-	grid := plotter.NewGrid()
-	plt.Add(grid, quad, exp, sin)
+	plt.Add(quad, exp, sin)
 	qviz.Render(plt)
 }

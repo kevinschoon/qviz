@@ -1,18 +1,20 @@
 #!/bin/bash
+# generate runtime symbols for Yaegi
 set -e
 
 BASE_PACKAGE="$1"
-SYMBOLS_PATH="pkg/internal/loader/symbols/"
+SYMBOLS_PATH="$2"
 
 _usage() {
-	echo "USAGE: gen.sh PACKAGE [SKIP_PATTERN...]"
+	echo "USAGE: gen.sh PACKAGE OUT_DIR [SKIP_PATTERN...]"
 }
 
-if [[ -z "$BASE_PACKAGE" ]] ; then
+if [[ -z "$BASE_PACKAGE" || -z "$SYMBOLS_PATH" ]] ; then
 	_usage
 	exit 1
 fi
 
+shift
 shift
 
 _grep_args=("-v")

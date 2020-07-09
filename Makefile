@@ -1,4 +1,4 @@
-SYMBOLS_PATH=pkg/internal/loader/symbols
+SYMBOLS_PATH=pkg/internal/runtime/symbols
 QVIZ_VERSION=$(shell git describe --tags 2>/dev/null || git rev-parse HEAD)
 GONUM_VERSION=$(shell grep 'gonum.org/v1/gonum' go.mod | cut -d ' ' -f2)
 QFRAME_VERSION=$(shell grep 'github.com/tobgu/qframe' go.mod | cut -d ' ' -f2)
@@ -63,14 +63,17 @@ generate: ${SYMBOLS_PATH}
 	find ${SYMBOLS_PATH} -type f -name 'go1_*' -exec rm {} \;
 	scripts/gen.sh \
 		'gonum.org/v1/plot/...' \
+		${SYMBOLS_PATH} \
 		'.*\/internal\/.*' \
 		'gonum.org/v1/plot/gob'
 	scripts/gen.sh \
 		'gonum.org/v1/gonum/...' \
+		${SYMBOLS_PATH} \
 		'.*\/internal\/.*' \
 		'gonum.org/v1/gonum/blas/testblas/benchautogen'
 	scripts/gen.sh \
 		'github.com/tobgu/qframe/...' \
+		${SYMBOLS_PATH} \
 		'.*\/internal\/.*' \
 		'github.com/tobgu/qframe/cmd/qfgenerate' \
 		'github.com/tobgu/qframe/config'

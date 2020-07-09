@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	cli "github.com/jawher/mow.cli"
-	"github.com/kevinschoon/qviz/pkg/internal/loader"
+	"github.com/kevinschoon/qviz/pkg/internal/runtime"
 	"github.com/kevinschoon/qviz/pkg/version"
 )
 
@@ -51,15 +52,15 @@ func Run(args []string) {
 	app := cli.App("qviz", "Generate plots by writing Go scripts")
 	app.LongDesc = fmt.Sprintf(longDesc, version.String())
 	app.Spec = "[OPTIONS] SCRIPT_PATH"
-	opts := loader.DefaultOptions()
+	opts := runtime.DefaultOptions()
+	app.StringOptPtr(&opts.FilePath, "o out", "", "file output path (implies headless)")
+	app.StringOptPtr(&opts.FileType, "t type", "jpg", "file output type [eps,jpg,pdf,png,svg,tiff]")
+	app.IntOptPtr(&opts.Width, "w width", 900, "output width (pixels)")
+	app.IntOptPtr(&opts.Height, "h height", 800, "output height (pixels)")
+	app.BoolOptPtr(&opts.Headless, "headless", false, "do not render the UI")
 	app.StringArgPtr(&opts.ScriptPath, "SCRIPT_PATH", opts.ScriptPath, "path to a qviz script file")
-	app.BoolOptPtr(&opts.Watch, "m monitor", opts.Watch, "monitor the script for changes running on each modification")
-	app.IntOptPtr(&opts.Width, "width", opts.Width, "image width (inches)")
-	app.IntOptPtr(&opts.Height, "height", opts.Height, "image height (inches)")
-	app.StringOptPtr(&opts.FilePath, "o out", opts.FilePath, "write the plot to this path")
-	app.StringOptPtr(&opts.FileType, "t type", opts.FileType, "type of file to output [eps,jpg,pdf,png,svg,tiff]")
 	app.Action = func() {
-		Maybe(loader.Load(*opts))
+		Maybe(runtime.New(*opts).Run(context.Background()))
 	}
 	Maybe(app.Run(args))
 }
