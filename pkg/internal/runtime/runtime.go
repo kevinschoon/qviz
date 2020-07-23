@@ -23,6 +23,7 @@ type Options struct {
 	Width      int
 	Headless   bool
 	ScriptPath string
+	Watch      bool
 }
 
 func DefaultOptions() *Options {
@@ -70,62 +71,6 @@ func New(opts Options) *Runtime {
 	return rt
 }
 
-func (rt *Runtime) watch() {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		rt.errCh <- err
-		return
-	}
-	defer watcher.Close()
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					rt.errCh <- nil
-					return
-				}
-				// NOTE: vim is weird
-				if isWrite(event) || isRemove(event) {
-					raw, err := ioutil.ReadFile(rt.scriptPath)
-					if err != nil {
-						rt.errCh <- err
-						return
-					}
-					rt.evalInCh <- evalOpts{ScriptContents: string(raw)}
-					if isRemove(event) {
-						// wait for the file to move back again.
-						err = wait(rt.scriptPath, 5*time.Second)
-						if err != nil {
-							rt.errCh <- err
-							return
-						}
-						err = watcher.Add(rt.scriptPath)
-						if err != nil {
-							rt.errCh <- err
-							return
-						}
-					}
-				}
-			case err, ok := <-watcher.Errors:
-				log.Println("caught error")
-				if !ok {
-					rt.errCh <- nil
-					return
-				}
-				rt.errCh <- err
-			}
-		}
-	}()
-	err = watcher.Add(rt.scriptPath)
-	if err != nil {
-		rt.errCh <- err
-		return
-	}
-	<-done
-}
-
 func (rt *Runtime) Run(ctx context.Context) error {
 	signal.Notify(rt.sigCh, os.Interrupt)
 	// read/eval the script once before
@@ -142,7 +87,7 @@ func (rt *Runtime) Run(ctx context.Context) error {
 		log.Println(err)
 	}
 	c.err = initErr
-	go rt.watch()
+	go Watch(rt.scriptPath, rt.evalInCh, rt.errCh)
 	go rt.handler.Start()
 	rt.evalOutCh <- c
 	log.Println("waiting for file changes")

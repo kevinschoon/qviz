@@ -32,6 +32,10 @@ func (d *display) Start() error {
 	return <-errCh
 }
 
+func (d *display) Handle(ctx *evalCtx) error {
+	return nil
+}
+
 func (d *display) handle(ops *op.Ops, evt event.Event) error {
 	switch evt := evt.(type) {
 	case system.DestroyEvent:
