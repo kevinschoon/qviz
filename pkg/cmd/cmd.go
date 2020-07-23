@@ -58,6 +58,7 @@ func Run(args []string) {
 	app.IntOptPtr(&opts.Width, "w width", 900, "output width (pixels)")
 	app.IntOptPtr(&opts.Height, "h height", 800, "output height (pixels)")
 	app.BoolOptPtr(&opts.Headless, "headless", false, "do not render the UI")
+	app.BoolOptPtr(&opts.Watch, "watch", true, "watch for changes")
 	app.StringArgPtr(&opts.ScriptPath, "SCRIPT_PATH", opts.ScriptPath, "path to a qviz script file")
 	app.Action = func() {
 		Maybe(runtime.New(*opts).Run(context.Background()))
