@@ -8,8 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"time"
-
-	"gopkg.in/fsnotify.v1"
 )
 
 type handler interface {
@@ -109,28 +107,6 @@ func (rt *Runtime) Run(ctx context.Context) error {
 				rt.evalOutCh <- evalCtx{err: err}
 			}
 		}
-	}
-}
-
-func isWrite(evt fsnotify.Event) bool {
-	return evt.Op&fsnotify.Write == fsnotify.Write
-}
-
-func isRemove(evt fsnotify.Event) bool {
-	return evt.Op&fsnotify.Remove == fsnotify.Remove
-}
-
-func wait(path string, timeout time.Duration) error {
-	start := time.Now()
-	for {
-		if time.Since(start) >= timeout {
-			return fmt.Errorf("timeout")
-		}
-		_, err := os.Stat(path)
-		if err == nil {
-			return nil
-		}
-		time.Sleep(50 * time.Millisecond)
 	}
 }
 

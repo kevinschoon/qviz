@@ -1,8 +1,10 @@
 package runtime
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
 	"gopkg.in/fsnotify.v1"
@@ -63,4 +65,26 @@ func Watch(scriptPath string, evalInCh chan evalOpts, errCh chan error) {
 		return
 	}
 	<-done
+}
+
+func isWrite(evt fsnotify.Event) bool {
+	return evt.Op&fsnotify.Write == fsnotify.Write
+}
+
+func isRemove(evt fsnotify.Event) bool {
+	return evt.Op&fsnotify.Remove == fsnotify.Remove
+}
+
+func wait(path string, timeout time.Duration) error {
+	start := time.Now()
+	for {
+		if time.Since(start) >= timeout {
+			return fmt.Errorf("timeout")
+		}
+		_, err := os.Stat(path)
+		if err == nil {
+			return nil
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
 }
