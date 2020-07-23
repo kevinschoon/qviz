@@ -12,6 +12,7 @@ import (
 
 type handler interface {
 	Start() error
+	Update(evalCtx) error
 }
 
 type Options struct {
@@ -36,24 +37,14 @@ type Runtime struct {
 	eval       evalFunc
 	handler    handler
 	headless   bool
-	filepath   string
-	filetype   string
-	width      float32
-	height     float32
-	sigCh      chan os.Signal
-	errCh      chan error
-	evalInCh   chan evalOpts
-	evalOutCh  chan evalCtx
+	watch      bool
 }
 
 func New(opts Options) *Runtime {
 	rt := &Runtime{
 		scriptPath: opts.ScriptPath,
 		eval:       defaultEval,
-		sigCh:      make(chan os.Signal),
-		errCh:      make(chan error),
-		evalInCh:   make(chan evalOpts),
-		evalOutCh:  make(chan evalCtx),
+		watch:      opts.Watch,
 	}
 	if opts.Headless || opts.FilePath != "" {
 		rt.handler = fileWriter{
@@ -61,16 +52,20 @@ func New(opts Options) *Runtime {
 			fileType: opts.FileType,
 			height:   float32(opts.Height),
 			width:    float32(opts.Width),
-			evalCh:   rt.evalOutCh,
 		}
 	} else {
-		rt.handler = &display{evalCh: rt.evalOutCh}
+		rt.handler = &display{}
 	}
 	return rt
 }
 
 func (rt *Runtime) Run(ctx context.Context) error {
-	signal.Notify(rt.sigCh, os.Interrupt)
+	var (
+		sigCh  = make(chan os.Signal)
+		evalCh = make(chan evalOpts)
+		errCh  = make(chan error)
+	)
+	signal.Notify(sigCh, os.Interrupt)
 	// read/eval the script once before
 	// starting the loop
 	var initErr error
@@ -85,28 +80,40 @@ func (rt *Runtime) Run(ctx context.Context) error {
 		log.Println(err)
 	}
 	c.err = initErr
-	go Watch(rt.scriptPath, rt.evalInCh, rt.errCh)
-	go rt.handler.Start()
-	rt.evalOutCh <- c
-	log.Println("waiting for file changes")
-	for {
-		select {
-		case err := <-rt.errCh:
+	if err := rt.handler.Start(); err != nil {
+		return err
+	}
+	if rt.watch {
+		go Watch(rt.scriptPath, evalCh, errCh)
+		if err := rt.handler.Update(c); err != nil {
 			return err
-		case sig := <-rt.sigCh:
-			fmt.Println(sig)
-			return nil
-		case opts := <-rt.evalInCh:
-			now := time.Now()
-			imgFn, err := rt.eval(ctx, opts)
-			if err == nil {
-				log.Println("script evaluated in", time.Since(now))
-				rt.evalOutCh <- imgFn
-			} else {
-				log.Println(err)
-				rt.evalOutCh <- evalCtx{err: err}
+		}
+		log.Println("waiting for file changes")
+		for {
+			select {
+			case err := <-errCh:
+				return err
+			case sig := <-sigCh:
+				fmt.Println(sig)
+				return nil
+			case opts := <-evalCh:
+				now := time.Now()
+				imgFn, err := rt.eval(ctx, opts)
+				if err == nil {
+					log.Println("script evaluated in", time.Since(now))
+					if err := rt.handler.Update(imgFn); err != nil {
+						return err
+					}
+				} else {
+					log.Println(err)
+					if err := rt.handler.Update(evalCtx{err: err}); err != nil {
+						return err
+					}
+				}
 			}
 		}
+	} else {
+		return rt.handler.Update(c)
 	}
 }
 

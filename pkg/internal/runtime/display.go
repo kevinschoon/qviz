@@ -16,23 +16,31 @@ import (
 
 type display struct {
 	ctx    evalCtx
-	evalCh <-chan evalCtx
+	errCh  chan error
+	evalCh chan evalCtx
 }
 
 func (d *display) Start() error {
-	errCh := make(chan error)
+	d.evalCh = make(chan evalCtx)
+	d.errCh = make(chan error)
 	go func() {
 		w := app.NewWindow(app.Title("QViz"))
 		if err := d.loop(w); err != nil {
-			errCh <- err
+			d.errCh <- err
 			return
 		}
 	}()
-	app.Main()
-	return <-errCh
+	go app.Main()
+	return nil
 }
 
-func (d *display) Handle(ctx *evalCtx) error {
+func (d *display) Update(ctx evalCtx) error {
+	select {
+	case err := <-d.errCh:
+		return err
+	default:
+		d.evalCh <- ctx
+	}
 	return nil
 }
 
@@ -45,7 +53,7 @@ func (d *display) handle(ops *op.Ops, evt event.Event) error {
 		var img image.Image
 		x := float32(gtx.Constraints.Max.X) - 100
 		y := float32(gtx.Constraints.Max.Y) - 100
-		if d.ctx.err == nil {
+		if d.ctx.err == nil && d.ctx.plot != nil { // TODO
 			img = toImage(d.ctx, x, y)
 		} else {
 			img = loading(uint(x), uint(y))
